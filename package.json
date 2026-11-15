@@ -1,6 +1,6 @@
 {
   "name": "com.minefarm.scene-pin",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "displayName": "Scene Pin",
   "description": "Pin frequently used scenes beside Unity's Play Mode controls and open them with one click.",
   "unity": "6000.3",

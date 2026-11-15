@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4] - 2026-11-15
+
+- Add the Scene icon to the Scene Pin editor window tab.
+
 ## [0.1.3] - 2026-11-15
 
 - Replace the side-by-side settings panels with full-width Project Scenes and Pinned Toolbar tabs.

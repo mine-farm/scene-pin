@@ -33,7 +33,7 @@ namespace SceneToolbar.Editor
         internal static void Open()
         {
             var window = GetWindow<SceneToolbarSettingsWindow>();
-            window.titleContent = new GUIContent("Scene Pin");
+            window.ApplyWindowTitle();
             window.minSize = new Vector2(760f, 460f);
             window.Show();
         }
@@ -63,6 +63,7 @@ namespace SceneToolbar.Editor
 
         public void CreateGUI()
         {
+            ApplyWindowTitle();
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StyleSheetPath);
             if (styleSheet != null)
             {
@@ -72,6 +73,13 @@ namespace SceneToolbar.Editor
             rootVisualElement.name = "sceneToolbarRoot";
             rootVisualElement.AddToClassList("scene-toolbar-root");
             Rebuild();
+        }
+
+        private void ApplyWindowTitle()
+        {
+            titleContent = new GUIContent(
+                "Scene Pin",
+                SceneAssetUtility.GetDefaultSceneIcon());
         }
 
         private void Rebuild()
