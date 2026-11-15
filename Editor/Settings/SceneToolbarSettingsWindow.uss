@@ -90,9 +90,63 @@
     margin-right: 6px;
 }
 
-.scene-toolbar-split {
+.scene-toolbar-tab-view {
     flex-grow: 1;
     min-height: 320px;
+}
+
+.scene-toolbar-tab-bar {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.scene-toolbar-tab-button {
+    min-width: 140px;
+    min-height: 30px;
+    margin-right: 3px;
+    margin-bottom: -1px;
+    padding: 5px 14px;
+    -unity-font-style: bold;
+    color: var(--scene-muted);
+    background-color: var(--scene-button-background);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    border-left-color: var(--unity-colors-default-border);
+    border-right-color: var(--unity-colors-default-border);
+    border-top-color: transparent;
+    border-bottom-color: var(--unity-colors-default-border);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.scene-toolbar-tab-button:hover {
+    color: var(--unity-colors-default-text);
+    background-color: var(--scene-button-background-hover);
+}
+
+.scene-toolbar-tab-button-active,
+.scene-toolbar-tab-button-active:hover {
+    color: var(--unity-colors-default-text);
+    background-color: var(--unity-colors-box-background);
+    border-top-color: var(--scene-accent);
+    border-bottom-color: var(--unity-colors-box-background);
+}
+
+.scene-toolbar-tab-content {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.scene-toolbar-tab-panel {
+    display: none;
+}
+
+.scene-toolbar-tab-panel-active {
+    display: flex;
 }
 
 .scene-toolbar-panel {
@@ -111,10 +165,6 @@
     border-top-right-radius: 5px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
-}
-
-.scene-toolbar-pinned-panel {
-    margin-left: 8px;
 }
 
 .scene-toolbar-panel-header {

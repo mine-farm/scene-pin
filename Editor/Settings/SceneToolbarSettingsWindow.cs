@@ -12,6 +12,12 @@ namespace SceneToolbar.Editor
 {
     internal sealed class SceneToolbarSettingsWindow : EditorWindow
     {
+        private enum SettingsTab
+        {
+            ProjectScenes,
+            PinnedToolbar
+        }
+
         private const string StyleSheetPath =
             "Packages/com.minefarm.scene-pin/Editor/Settings/SceneToolbarSettingsWindow.uss";
 
@@ -21,6 +27,7 @@ namespace SceneToolbar.Editor
         private VisualElement projectSceneResults;
         private Label projectSceneCount;
         private string searchQuery = string.Empty;
+        private SettingsTab activeTab;
         private bool rebuildScheduled;
 
         internal static void Open()
@@ -82,17 +89,7 @@ namespace SceneToolbar.Editor
             rootVisualElement.Add(CreateHero(currentSettings));
             rootVisualElement.Add(CreateSearchBar());
 
-            var splitView = new TwoPaneSplitView(
-                0,
-                470f,
-                TwoPaneSplitViewOrientation.Horizontal)
-            {
-                name = "sceneToolbarSplitView"
-            };
-            splitView.AddToClassList("scene-toolbar-split");
-            splitView.Add(CreateProjectScenePanel());
-            splitView.Add(CreatePinnedScenePanel(currentSettings));
-            rootVisualElement.Add(splitView);
+            rootVisualElement.Add(CreateTabView(currentSettings));
 
             rootVisualElement.Add(new Label(
                 "Scene assets under Assets are discovered automatically. Opening a scene uses Single mode and keeps Unity's save prompt.")
@@ -157,6 +154,95 @@ namespace SceneToolbar.Editor
             rescanButton.AddToClassList("scene-toolbar-secondary-button");
             bar.Add(rescanButton);
             return bar;
+        }
+
+        private VisualElement CreateTabView(SceneToolbarSettings settings)
+        {
+            var tabView = new VisualElement
+            {
+                name = "sceneToolbarTabView"
+            };
+            tabView.AddToClassList("scene-toolbar-tab-view");
+
+            var tabBar = new VisualElement
+            {
+                name = "sceneToolbarTabBar"
+            };
+            tabBar.AddToClassList("scene-toolbar-tab-bar");
+
+            var projectScenesTab = new Button
+            {
+                name = "projectScenesTab",
+                text = "Project Scenes"
+            };
+            projectScenesTab.AddToClassList("scene-toolbar-tab-button");
+            tabBar.Add(projectScenesTab);
+
+            var pinnedToolbarTab = new Button
+            {
+                name = "pinnedToolbarTab",
+                text = "Pinned Toolbar"
+            };
+            pinnedToolbarTab.AddToClassList("scene-toolbar-tab-button");
+            tabBar.Add(pinnedToolbarTab);
+            tabView.Add(tabBar);
+
+            var tabContent = new VisualElement
+            {
+                name = "sceneToolbarTabContent"
+            };
+            tabContent.AddToClassList("scene-toolbar-tab-content");
+
+            var projectScenesPanel = CreateProjectScenePanel();
+            projectScenesPanel.AddToClassList("scene-toolbar-tab-panel");
+            var pinnedToolbarPanel = CreatePinnedScenePanel(settings);
+            pinnedToolbarPanel.AddToClassList("scene-toolbar-tab-panel");
+            tabContent.Add(projectScenesPanel);
+            tabContent.Add(pinnedToolbarPanel);
+            tabView.Add(tabContent);
+
+            projectScenesTab.clicked += () => SelectTab(
+                SettingsTab.ProjectScenes,
+                projectScenesTab,
+                projectScenesPanel,
+                pinnedToolbarTab,
+                pinnedToolbarPanel);
+            pinnedToolbarTab.clicked += () => SelectTab(
+                SettingsTab.PinnedToolbar,
+                projectScenesTab,
+                projectScenesPanel,
+                pinnedToolbarTab,
+                pinnedToolbarPanel);
+            SelectTab(
+                activeTab,
+                projectScenesTab,
+                projectScenesPanel,
+                pinnedToolbarTab,
+                pinnedToolbarPanel);
+            return tabView;
+        }
+
+        private void SelectTab(
+            SettingsTab tab,
+            Button projectScenesTab,
+            VisualElement projectScenesPanel,
+            Button pinnedToolbarTab,
+            VisualElement pinnedToolbarPanel)
+        {
+            activeTab = tab;
+            var projectScenesActive = tab == SettingsTab.ProjectScenes;
+            projectScenesTab.EnableInClassList(
+                "scene-toolbar-tab-button-active",
+                projectScenesActive);
+            projectScenesPanel.EnableInClassList(
+                "scene-toolbar-tab-panel-active",
+                projectScenesActive);
+            pinnedToolbarTab.EnableInClassList(
+                "scene-toolbar-tab-button-active",
+                !projectScenesActive);
+            pinnedToolbarPanel.EnableInClassList(
+                "scene-toolbar-tab-panel-active",
+                !projectScenesActive);
         }
 
         private VisualElement CreateProjectScenePanel()
@@ -334,7 +420,6 @@ namespace SceneToolbar.Editor
                 name = "pinnedScenePanel"
             };
             panel.AddToClassList("scene-toolbar-panel");
-            panel.AddToClassList("scene-toolbar-pinned-panel");
 
             var header = new VisualElement();
             header.AddToClassList("scene-toolbar-panel-header");
