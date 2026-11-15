@@ -5,6 +5,11 @@
     --scene-warning: #e2a553;
     --scene-danger: #d96c72;
     --scene-muted: rgba(160, 168, 178, 0.86);
+    --scene-button-background: rgba(127, 127, 127, 0.16);
+    --scene-button-background-hover: rgba(127, 127, 127, 0.28);
+    --scene-button-background-active: rgba(127, 127, 127, 0.38);
+    --scene-button-border: rgba(127, 127, 127, 0.45);
+    --scene-button-border-hover: rgba(127, 127, 127, 0.62);
 }
 
 .scene-toolbar-root {
@@ -243,6 +248,45 @@
 .scene-toolbar-secondary-button {
     min-height: 22px;
     margin-left: 3px;
+    background-color: var(--scene-button-background);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: var(--scene-button-border);
+    border-right-color: var(--scene-button-border);
+    border-top-color: var(--scene-button-border);
+    border-bottom-color: var(--scene-button-border);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.scene-toolbar-small-button:hover,
+.scene-toolbar-icon-button:hover,
+.scene-toolbar-secondary-button:hover {
+    background-color: var(--scene-button-background-hover);
+    border-left-color: var(--scene-button-border-hover);
+    border-right-color: var(--scene-button-border-hover);
+    border-top-color: var(--scene-button-border-hover);
+    border-bottom-color: var(--scene-button-border-hover);
+}
+
+.scene-toolbar-small-button:active,
+.scene-toolbar-icon-button:active,
+.scene-toolbar-secondary-button:active {
+    background-color: var(--scene-button-background-active);
+}
+
+.scene-toolbar-small-button:disabled,
+.scene-toolbar-icon-button:disabled,
+.scene-toolbar-secondary-button:disabled {
+    background-color: rgba(127, 127, 127, 0.08);
+    border-left-color: rgba(127, 127, 127, 0.2);
+    border-right-color: rgba(127, 127, 127, 0.2);
+    border-top-color: rgba(127, 127, 127, 0.2);
+    border-bottom-color: rgba(127, 127, 127, 0.2);
 }
 
 .scene-toolbar-small-button {
@@ -272,6 +316,10 @@
 
 .scene-toolbar-pin-button:hover {
     background-color: var(--scene-accent-hover);
+}
+
+.scene-toolbar-pin-button:active {
+    background-color: #3f82d1;
 }
 
 .scene-toolbar-unpin-button {
