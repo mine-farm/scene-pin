@@ -20,6 +20,8 @@ namespace SceneToolbar.Editor
 
         private const string StyleSheetPath =
             "Packages/com.minefarm.scene-pin/Editor/Settings/SceneToolbarSettingsWindow.uss";
+        private const string IconDirectoryPath =
+            "Packages/com.minefarm.scene-pin/Editor/Settings/Icons/";
 
         private readonly HashSet<string> expandedEntries = new HashSet<string>(StringComparer.Ordinal);
         private IReadOnlyList<ResolvedSceneAsset> projectScenes = Array.Empty<ResolvedSceneAsset>();
@@ -154,12 +156,11 @@ namespace SceneToolbar.Editor
             });
             bar.Add(search);
 
-            var rescanButton = new Button(Rebuild)
-            {
-                text = "Rescan",
-                tooltip = "Rescan all SceneAsset files under Assets"
-            };
-            rescanButton.AddToClassList("scene-toolbar-secondary-button");
+            var rescanButton = CreateActionButton(
+                Rebuild,
+                "refresh",
+                "Rescan all SceneAsset files under Assets",
+                "scene-toolbar-secondary-button");
             bar.Add(rescanButton);
             return bar;
         }
@@ -371,49 +372,47 @@ namespace SceneToolbar.Editor
 
             var actions = new VisualElement();
             actions.AddToClassList("scene-toolbar-row-actions");
-            var locateButton = new Button(() =>
-            {
-                Selection.activeObject = scene.SceneAsset;
-                EditorGUIUtility.PingObject(scene.SceneAsset);
-            })
-            {
-                text = "Locate",
-                tooltip = "Select this scene in the Project window"
-            };
-            locateButton.AddToClassList("scene-toolbar-small-button");
+            var locateButton = CreateActionButton(
+                () =>
+                {
+                    Selection.activeObject = scene.SceneAsset;
+                    EditorGUIUtility.PingObject(scene.SceneAsset);
+                },
+                "locate",
+                "Select this scene in the Project window",
+                "scene-toolbar-small-button");
             actions.Add(locateButton);
 
-            var openButton = new Button(() => SceneOpenAction.Open(scene.Guid))
-            {
-                text = "Open",
-                tooltip = isOnlyOpenScene
+            var openButton = CreateActionButton(
+                () => SceneOpenAction.Open(scene.Guid),
+                "open",
+                isOnlyOpenScene
                     ? "This is already the only open scene"
-                    : "Open this scene in Single mode"
-            };
+                    : "Open this scene in Single mode",
+                "scene-toolbar-small-button");
             openButton.SetEnabled(SceneAssetUtility.CanOpenScenes && !isOnlyOpenScene);
-            openButton.AddToClassList("scene-toolbar-small-button");
             actions.Add(openButton);
 
-            var pinButton = new Button(() =>
-            {
-                if (isPinned)
+            var pinButton = CreateActionButton(
+                () =>
                 {
-                    SceneToolbarSettingsRepository.Remove(scene.Guid);
-                }
-                else
-                {
-                    SceneToolbarSettingsRepository.AddScenes(new[] { scene.SceneAsset });
-                }
-            })
-            {
-                text = isPinned ? "Unpin" : "Pin",
-                tooltip = isPinned
+                    if (isPinned)
+                    {
+                        SceneToolbarSettingsRepository.Remove(scene.Guid);
+                    }
+                    else
+                    {
+                        SceneToolbarSettingsRepository.AddScenes(new[] { scene.SceneAsset });
+                    }
+                },
+                "pin",
+                isPinned
                     ? "Remove this scene from the main toolbar"
-                    : "Add this scene beside the Play Mode controls"
-            };
+                    : "Add this scene beside the Play Mode controls",
+                "scene-toolbar-small-button",
+                isPinned ? GetDangerIconColor() : Color.white);
             pinButton.SetEnabled(
                 isPinned || currentSettings.Entries.Count < SceneToolbarSettings.MaxEntries);
-            pinButton.AddToClassList("scene-toolbar-small-button");
             pinButton.AddToClassList(
                 isPinned ? "scene-toolbar-unpin-button" : "scene-toolbar-pin-button");
             actions.Add(pinButton);
@@ -507,26 +506,31 @@ namespace SceneToolbar.Editor
 
             var actions = new VisualElement();
             actions.AddToClassList("scene-toolbar-row-actions");
-            var openButton = new Button(() => SceneOpenAction.Open(sceneGuid))
-            {
-                text = "Open",
-                tooltip = "Open this scene"
-            };
+            var openButton = CreateActionButton(
+                () => SceneOpenAction.Open(sceneGuid),
+                "open",
+                "Open this scene",
+                "scene-toolbar-small-button");
             openButton.SetEnabled(
                 scene.IsValid &&
                 SceneAssetUtility.CanOpenScenes &&
                 !SceneAssetUtility.IsOnlyOpenScene(scene.Path));
-            openButton.AddToClassList("scene-toolbar-small-button");
             actions.Add(openButton);
-            actions.Add(CreateMoveButton(sceneGuid, index, -1, "↑", "Move left"));
-            actions.Add(CreateMoveButton(sceneGuid, index, 1, "↓", "Move right", entryCount));
+            actions.Add(CreateMoveButton(sceneGuid, index, -1, "chevron-up", "Move left"));
+            actions.Add(CreateMoveButton(
+                sceneGuid,
+                index,
+                1,
+                "chevron-down",
+                "Move right",
+                entryCount));
 
-            var removeButton = new Button(() => SceneToolbarSettingsRepository.Remove(sceneGuid))
-            {
-                text = "Unpin",
-                tooltip = "Remove this scene from the main toolbar"
-            };
-            removeButton.AddToClassList("scene-toolbar-small-button");
+            var removeButton = CreateActionButton(
+                () => SceneToolbarSettingsRepository.Remove(sceneGuid),
+                "pin",
+                "Remove this scene from the main toolbar",
+                "scene-toolbar-small-button",
+                GetDangerIconColor());
             removeButton.AddToClassList("scene-toolbar-unpin-button");
             actions.Add(removeButton);
             header.Add(actions);
@@ -576,18 +580,55 @@ namespace SceneToolbar.Editor
             string sceneGuid,
             int index,
             int offset,
-            string text,
+            string iconName,
             string tooltip,
             int entryCount = int.MaxValue)
         {
-            var button = new Button(() => SceneToolbarSettingsRepository.Move(sceneGuid, offset))
+            var button = CreateActionButton(
+                () => SceneToolbarSettingsRepository.Move(sceneGuid, offset),
+                iconName,
+                tooltip,
+                "scene-toolbar-icon-button");
+            button.SetEnabled(offset < 0 ? index > 0 : index < entryCount - 1);
+            return button;
+        }
+
+        private static Button CreateActionButton(
+            Action action,
+            string iconName,
+            string tooltip,
+            string buttonClass,
+            Color? iconTint = null)
+        {
+            var button = new Button(action)
             {
-                text = text,
                 tooltip = tooltip
             };
-            button.SetEnabled(offset < 0 ? index > 0 : index < entryCount - 1);
-            button.AddToClassList("scene-toolbar-icon-button");
+            button.AddToClassList(buttonClass);
+
+            var icon = new Image
+            {
+                vectorImage = AssetDatabase.LoadAssetAtPath<VectorImage>(
+                    $"{IconDirectoryPath}{iconName}.svg"),
+                scaleMode = ScaleMode.ScaleToFit,
+                pickingMode = PickingMode.Ignore,
+                tintColor = iconTint ?? GetDefaultIconColor()
+            };
+            icon.AddToClassList("scene-toolbar-button-icon");
+            button.Add(icon);
             return button;
+        }
+
+        private static Color GetDefaultIconColor()
+        {
+            return EditorGUIUtility.isProSkin
+                ? new Color32(205, 205, 205, 255)
+                : new Color32(55, 55, 55, 255);
+        }
+
+        private static Color GetDangerIconColor()
+        {
+            return new Color32(217, 108, 114, 255);
         }
 
         private static TextField CreateDisplayNameField(SceneToolbarEntry entry, string sceneGuid)

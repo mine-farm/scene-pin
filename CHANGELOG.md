@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.6] - 2026-11-15
+
+- Replace settings-window action labels with compact SVG icons while preserving descriptive tooltips.
+
 ## [0.1.5] - 2026-11-15
 
 - Give pinned scene buttons the same gray surface and interaction states as the settings button.

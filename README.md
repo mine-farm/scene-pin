@@ -13,15 +13,15 @@ In Unity, open **Window > Package Management > Package Manager**, choose
 https://github.com/mine-farm/scene-pin.git
 ```
 
-To pin a release, append its tag, for example `#v0.1.5`.
+To pin a release, append its tag, for example `#v0.1.6`.
 
 ## Use
 
 1. Click the settings button immediately left of Play Mode. Scene Pin scans every
    `SceneAsset` under `Assets` and supports live search by scene name or path.
-2. Use **Open** to switch scenes, **Locate** to select one in the Project window,
-   and **Pin** to create a one-click scene button in the main toolbar. Up to eight
-   scenes can be pinned.
+2. Use the icon actions to open a scene, locate it in the Project window, or pin it
+   to the main toolbar. Hover an icon for its description. Up to eight scenes can
+   be pinned.
 3. You can also select scene assets in the Project window and use
    **Assets > Scene Pin > Add to Toolbar**.
 4. Reorder pinned scenes, edit labels, choose built-in or custom icons, and select

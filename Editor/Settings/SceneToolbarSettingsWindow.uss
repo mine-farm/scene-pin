@@ -298,6 +298,8 @@
 .scene-toolbar-secondary-button {
     min-height: 22px;
     margin-left: 3px;
+    align-items: center;
+    justify-content: center;
     background-color: var(--scene-button-background);
     border-left-width: 1px;
     border-right-width: 1px;
@@ -340,19 +342,36 @@
 }
 
 .scene-toolbar-small-button {
-    min-width: 46px;
-    padding-left: 7px;
-    padding-right: 7px;
+    width: 30px;
+    min-width: 30px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .scene-toolbar-icon-button {
-    min-width: 24px;
-    padding-left: 4px;
-    padding-right: 4px;
+    width: 28px;
+    min-width: 28px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .scene-toolbar-secondary-button {
-    min-width: 62px;
+    width: 30px;
+    min-width: 30px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.scene-toolbar-button-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.scene-toolbar-small-button:disabled > .scene-toolbar-button-icon,
+.scene-toolbar-icon-button:disabled > .scene-toolbar-button-icon,
+.scene-toolbar-secondary-button:disabled > .scene-toolbar-button-icon {
+    opacity: 0.35;
 }
 
 .scene-toolbar-pin-button {
