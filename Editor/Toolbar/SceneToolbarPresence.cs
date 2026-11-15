@@ -16,6 +16,8 @@ namespace SceneToolbar.Editor
             "Packages/com.minefarm.scene-pin/Editor/Toolbar/SceneToolbarMainToolbar.uss";
         private const string SettingsOverlayClass = "scene-pin-settings-overlay";
         private const string SettingsButtonClass = "scene-pin-settings-button";
+        private const string ScenesOverlayClass = "scene-pin-scenes-overlay";
+        private const string SceneButtonClass = "scene-pin-scene-button";
         private const double CheckIntervalSeconds = 1d;
 
         private static readonly MethodInfo DockBeforeMethod = typeof(Overlay).GetMethod(
@@ -82,7 +84,8 @@ namespace SceneToolbar.Editor
             {
                 KeepDisplayed(settings);
                 KeepDisplayed(scenes);
-                StyleSettingsButton(settings);
+                StyleButtons(settings, SettingsOverlayClass, SettingsButtonClass);
+                StyleButtons(scenes, ScenesOverlayClass, SceneButtonClass);
                 DockImmediatelyBefore(settings, playModeControls);
                 DockImmediatelyBefore(scenes, settings);
             }
@@ -115,10 +118,13 @@ namespace SceneToolbar.Editor
             }
         }
 
-        private static void StyleSettingsButton(Overlay overlay)
+        private static void StyleButtons(
+            Overlay overlay,
+            string overlayClass,
+            string buttonClass)
         {
             var root = overlay.rootVisualElement;
-            if (!root.ClassListContains(SettingsOverlayClass))
+            if (!root.ClassListContains(overlayClass))
             {
                 var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ToolbarStyleSheetPath);
                 if (styleSheet == null)
@@ -127,13 +133,15 @@ namespace SceneToolbar.Editor
                 }
 
                 root.styleSheets.Add(styleSheet);
-                root.AddToClassList(SettingsOverlayClass);
+                root.AddToClassList(overlayClass);
             }
 
-            var button = root.Q<VisualElement>(className: "unity-toolbar-button");
-            if (button != null && !button.ClassListContains(SettingsButtonClass))
+            foreach (var button in root.Query<VisualElement>(className: "unity-toolbar-button").ToList())
             {
-                button.AddToClassList(SettingsButtonClass);
+                if (!button.ClassListContains(buttonClass))
+                {
+                    button.AddToClassList(buttonClass);
+                }
             }
         }
 

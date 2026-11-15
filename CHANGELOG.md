@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2026-11-15
+
+- Give pinned scene buttons the same gray surface and interaction states as the settings button.
+
 ## [0.1.4] - 2026-11-15
 
 - Add the Scene icon to the Scene Pin editor window tab.

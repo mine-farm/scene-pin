@@ -13,7 +13,7 @@ In Unity, open **Window > Package Management > Package Manager**, choose
 https://github.com/mine-farm/scene-pin.git
 ```
 
-To pin a release, append its tag, for example `#v0.1.4`.
+To pin a release, append its tag, for example `#v0.1.5`.
 
 ## Use
 
