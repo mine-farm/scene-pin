@@ -1,0 +1,12 @@
+/.idea/
+/.vscode/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+*.tmp
+*.userprefs
+Thumbs.db
+.DS_Store
