@@ -90,6 +90,198 @@
     margin-right: 6px;
 }
 
+.scene-toolbar-organizer {
+    padding: 8px;
+    margin-bottom: 8px;
+    background-color: var(--unity-colors-box-background);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: var(--unity-colors-default-border);
+    border-right-color: var(--unity-colors-default-border);
+    border-top-color: var(--unity-colors-default-border);
+    border-bottom-color: var(--unity-colors-default-border);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.scene-toolbar-organizer-header,
+.scene-toolbar-organizer-body,
+.scene-toolbar-organizer-strip,
+.scene-toolbar-organizer-chip {
+    flex-direction: row;
+    align-items: center;
+}
+
+.scene-toolbar-organizer-header {
+    margin-bottom: 6px;
+}
+
+.scene-toolbar-organizer-title {
+    -unity-font-style: bold;
+    color: var(--unity-colors-default-text);
+}
+
+.scene-toolbar-organizer-description {
+    margin-left: 8px;
+    font-size: 9px;
+    color: var(--scene-muted);
+}
+
+.scene-toolbar-organizer-body {
+    min-height: 52px;
+    align-items: stretch;
+}
+
+.scene-toolbar-organizer-scroll {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.scene-toolbar-organizer-strip {
+    flex-grow: 1;
+    min-height: 48px;
+    padding: 5px;
+    background-color: var(--unity-colors-default-background);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: var(--scene-button-border);
+    border-right-color: var(--scene-button-border);
+    border-top-color: var(--scene-button-border);
+    border-bottom-color: var(--scene-button-border);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.scene-toolbar-organizer-strip-active {
+    background-color: rgba(79, 156, 249, 0.12);
+    border-left-color: var(--scene-accent);
+    border-right-color: var(--scene-accent);
+    border-top-color: var(--scene-accent);
+    border-bottom-color: var(--scene-accent);
+}
+
+.scene-toolbar-organizer-strip-active > .scene-toolbar-organizer-empty {
+    display: none;
+}
+
+.scene-toolbar-organizer-empty {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    color: var(--scene-muted);
+}
+
+.scene-toolbar-organizer-chip {
+    width: 126px;
+    min-height: 36px;
+    flex-shrink: 0;
+    padding: 5px 6px;
+    margin-right: 5px;
+    background-color: var(--scene-button-background);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: var(--scene-button-border);
+    border-right-color: var(--scene-button-border);
+    border-top-color: var(--scene-button-border);
+    border-bottom-color: var(--scene-button-border);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.scene-toolbar-organizer-chip:hover {
+    background-color: var(--scene-button-background-hover);
+    border-left-color: var(--scene-button-border-hover);
+    border-right-color: var(--scene-button-border-hover);
+    border-top-color: var(--scene-button-border-hover);
+    border-bottom-color: var(--scene-button-border-hover);
+}
+
+.scene-toolbar-organizer-position {
+    min-width: 18px;
+    margin-right: 4px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    color: var(--scene-accent);
+}
+
+.scene-toolbar-organizer-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+
+.scene-toolbar-organizer-name {
+    flex-grow: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--unity-colors-default-text);
+}
+
+.scene-toolbar-drop-marker {
+    width: 3px;
+    min-height: 36px;
+    flex-shrink: 0;
+    margin-right: 4px;
+    background-color: var(--scene-accent);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.scene-toolbar-unpin-drop-zone {
+    min-width: 82px;
+    margin-left: 6px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(217, 108, 114, 0.06);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(217, 108, 114, 0.45);
+    border-right-color: rgba(217, 108, 114, 0.45);
+    border-top-color: rgba(217, 108, 114, 0.45);
+    border-bottom-color: rgba(217, 108, 114, 0.45);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.scene-toolbar-unpin-drop-zone-active {
+    background-color: rgba(217, 108, 114, 0.22);
+    border-left-color: var(--scene-danger);
+    border-right-color: var(--scene-danger);
+    border-top-color: var(--scene-danger);
+    border-bottom-color: var(--scene-danger);
+}
+
+.scene-toolbar-unpin-drop-icon {
+    width: 14px;
+    height: 14px;
+    margin-bottom: 2px;
+}
+
+.scene-toolbar-unpin-drop-label {
+    font-size: 9px;
+    color: var(--scene-danger);
+}
+
 .scene-toolbar-tab-view {
     flex-grow: 1;
     min-height: 320px;
@@ -236,6 +428,17 @@
     width: 26px;
     height: 26px;
     margin-right: 8px;
+}
+
+.scene-toolbar-scene-drag-source {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.scene-toolbar-scene-drag-source:hover {
+    background-color: var(--scene-button-background-hover);
 }
 
 .scene-toolbar-scene-information,

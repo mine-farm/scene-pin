@@ -48,6 +48,28 @@ namespace SceneToolbar.Editor.Tests
         }
 
         [Test]
+        public void Insert_PlacesEntriesAtDropIndexAndClampsToEnds()
+        {
+            settings.Add("guid-a");
+            settings.Add("guid-c");
+
+            Assert.That(settings.Insert("guid-b", 1), Is.True);
+            Assert.That(settings.Insert("guid-start", -1), Is.True);
+            Assert.That(settings.Insert("guid-end", 99), Is.True);
+            Assert.That(settings.Insert("guid-b", 0), Is.False);
+            Assert.That(
+                settings.Entries.Select(entry => entry.SceneGuid),
+                Is.EqualTo(new[]
+                {
+                    "guid-start",
+                    "guid-a",
+                    "guid-b",
+                    "guid-c",
+                    "guid-end"
+                }));
+        }
+
+        [Test]
         public void Entries_WithDistinctGuidsRemainIndependent()
         {
             Assert.That(settings.Add("guid-a"), Is.True);

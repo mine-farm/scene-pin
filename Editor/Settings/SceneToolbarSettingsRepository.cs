@@ -161,6 +161,39 @@ namespace SceneToolbar.Editor
                 settings => settings.Remove(sceneGuid));
         }
 
+        internal static bool AddSceneAt(SceneAsset scene, int index)
+        {
+            if (scene == null)
+            {
+                return false;
+            }
+
+            var sceneGuid = SceneAssetUtility.GetGuid(scene);
+            var settings = GetOrCreate();
+            if (settings == null ||
+                string.IsNullOrEmpty(sceneGuid) ||
+                settings.Contains(sceneGuid))
+            {
+                return false;
+            }
+
+            if (settings.Entries.Count >= SceneToolbarSettings.MaxEntries)
+            {
+                Debug.LogWarning(
+                    $"[Scene Pin] Registration is limited to {SceneToolbarSettings.MaxEntries} scenes to prevent main toolbar overflow.");
+                return false;
+            }
+
+            Undo.RecordObject(settings, "Add Scene to Scene Pin");
+            if (!settings.Insert(sceneGuid, index))
+            {
+                return false;
+            }
+
+            SaveAndNotify(settings);
+            return true;
+        }
+
         internal static bool Move(string sceneGuid, int offset)
         {
             return Modify(
@@ -169,6 +202,21 @@ namespace SceneToolbar.Editor
                 {
                     var currentIndex = settings.IndexOf(sceneGuid);
                     return settings.Move(currentIndex, currentIndex + offset);
+                });
+        }
+
+        internal static bool MoveTo(string sceneGuid, int targetIndex)
+        {
+            return Modify(
+                "Reorder Scene Pin",
+                settings =>
+                {
+                    var currentIndex = settings.IndexOf(sceneGuid);
+                    var clampedIndex = Mathf.Clamp(
+                        targetIndex,
+                        0,
+                        settings.Entries.Count - 1);
+                    return settings.Move(currentIndex, clampedIndex);
                 });
         }
 

@@ -92,6 +92,22 @@ namespace SceneToolbar.Editor
             return true;
         }
 
+        internal bool Insert(string sceneGuid, int index)
+        {
+            var currentEntries = EnsureEntries();
+            if (string.IsNullOrWhiteSpace(sceneGuid) ||
+                Contains(sceneGuid) ||
+                currentEntries.Count >= MaxEntries)
+            {
+                return false;
+            }
+
+            currentEntries.Insert(
+                Mathf.Clamp(index, 0, currentEntries.Count),
+                new SceneToolbarEntry(sceneGuid));
+            return true;
+        }
+
         internal bool Remove(string sceneGuid)
         {
             var index = IndexOf(sceneGuid);

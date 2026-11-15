@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.7] - 2026-11-15
+
+- Add a horizontal pinned-scene organizer with drag-to-pin, drag-to-reorder, and drop-to-unpin interactions.
+
 ## [0.1.6] - 2026-11-15
 
 - Replace settings-window action labels with compact SVG icons while preserving descriptive tooltips.

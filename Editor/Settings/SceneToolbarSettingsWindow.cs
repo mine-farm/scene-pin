@@ -98,6 +98,7 @@ namespace SceneToolbar.Editor
             projectScenes = SceneAssetUtility.FindProjectScenes();
             rootVisualElement.Add(CreateHero(currentSettings));
             rootVisualElement.Add(CreateSearchBar());
+            rootVisualElement.Add(CreatePinnedOrganizer(currentSettings));
 
             rootVisualElement.Add(CreateTabView(currentSettings));
 
@@ -231,6 +232,268 @@ namespace SceneToolbar.Editor
             return tabView;
         }
 
+        private VisualElement CreatePinnedOrganizer(SceneToolbarSettings settings)
+        {
+            var organizer = new VisualElement
+            {
+                name = "pinnedOrganizer"
+            };
+            organizer.AddToClassList("scene-toolbar-organizer");
+
+            var header = new VisualElement();
+            header.AddToClassList("scene-toolbar-organizer-header");
+            header.Add(new Label("Pinned order").WithClass("scene-toolbar-organizer-title"));
+            header.Add(new Label(
+                    "Drag scene icons here, move pins left or right, or drop one on Unpin.")
+                .WithClass("scene-toolbar-organizer-description"));
+            organizer.Add(header);
+
+            var body = new VisualElement();
+            body.AddToClassList("scene-toolbar-organizer-body");
+
+            var scrollView = new ScrollView(ScrollViewMode.Horizontal)
+            {
+                name = "pinnedOrganizerScroll",
+                horizontalScrollerVisibility = ScrollerVisibility.Auto,
+                verticalScrollerVisibility = ScrollerVisibility.Hidden
+            };
+            scrollView.AddToClassList("scene-toolbar-organizer-scroll");
+
+            var strip = new VisualElement
+            {
+                name = "pinnedDropStrip"
+            };
+            strip.AddToClassList("scene-toolbar-organizer-strip");
+            if (settings.Entries.Count == 0)
+            {
+                strip.Add(new Label("Drag a project scene icon here to pin it.")
+                    .WithClass("scene-toolbar-organizer-empty"));
+            }
+            else
+            {
+                for (var index = 0; index < settings.Entries.Count; index++)
+                {
+                    var entry = settings.Entries[index];
+                    if (entry != null)
+                    {
+                        strip.Add(CreatePinnedOrganizerChip(entry, index));
+                    }
+                }
+            }
+
+            ConfigurePinnedDropStrip(strip, settings);
+            scrollView.Add(strip);
+            body.Add(scrollView);
+
+            var unpinZone = new VisualElement
+            {
+                name = "unpinDropZone",
+                tooltip = "Drop a pinned scene here to remove it from the main toolbar"
+            };
+            unpinZone.AddToClassList("scene-toolbar-unpin-drop-zone");
+            var unpinIcon = new Image
+            {
+                vectorImage = AssetDatabase.LoadAssetAtPath<VectorImage>(
+                    $"{IconDirectoryPath}pin.svg"),
+                scaleMode = ScaleMode.ScaleToFit,
+                pickingMode = PickingMode.Ignore,
+                tintColor = GetDangerIconColor()
+            };
+            unpinIcon.AddToClassList("scene-toolbar-unpin-drop-icon");
+            unpinZone.Add(unpinIcon);
+            unpinZone.Add(new Label("Unpin").WithClass("scene-toolbar-unpin-drop-label"));
+            ConfigureUnpinDropZone(unpinZone);
+            body.Add(unpinZone);
+
+            organizer.Add(body);
+            return organizer;
+        }
+
+        private VisualElement CreatePinnedOrganizerChip(SceneToolbarEntry entry, int index)
+        {
+            var sceneGuid = entry.SceneGuid;
+            var scene = SceneAssetUtility.ResolveScene(sceneGuid);
+            var displayName = GetSceneDisplayName(entry, scene);
+            var chip = new VisualElement
+            {
+                userData = sceneGuid,
+                tooltip = $"Drag {displayName} to reorder or unpin it"
+            };
+            chip.AddToClassList("scene-toolbar-organizer-chip");
+            chip.Add(new Label((index + 1).ToString())
+                .WithClass("scene-toolbar-organizer-position"));
+            chip.Add(CreateIconPreview(
+                SceneAssetUtility.ResolveIcon(entry) ?? SceneAssetUtility.GetDefaultSceneIcon(),
+                "scene-toolbar-organizer-icon"));
+            chip.Add(new Label(displayName).WithClass("scene-toolbar-organizer-name"));
+            chip.AddManipulator(new SceneToolbarDragManipulator(
+                new SceneToolbarDragData(sceneGuid, scene.SceneAsset, true)));
+            return chip;
+        }
+
+        private void ConfigurePinnedDropStrip(
+            VisualElement strip,
+            SceneToolbarSettings settings)
+        {
+            var marker = new VisualElement
+            {
+                name = "pinnedInsertionMarker",
+                pickingMode = PickingMode.Ignore
+            };
+            marker.AddToClassList("scene-toolbar-drop-marker");
+
+            void ClearDropState()
+            {
+                marker.RemoveFromHierarchy();
+                strip.RemoveFromClassList("scene-toolbar-organizer-strip-active");
+            }
+
+            strip.RegisterCallback<DragUpdatedEvent>(dragEvent =>
+            {
+                var dragData = SceneToolbarDragData.Current;
+                var canAccept = dragData != null &&
+                                (dragData.IsPinned ||
+                                 settings.Entries.Count < SceneToolbarSettings.MaxEntries);
+                if (!canAccept)
+                {
+                    ClearDropState();
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                    return;
+                }
+
+                var insertionIndex = GetPinnedInsertionIndex(
+                    strip,
+                    dragData.SceneGuid,
+                    dragEvent.mousePosition);
+                ShowInsertionMarker(strip, marker, insertionIndex, dragData.SceneGuid);
+                strip.AddToClassList("scene-toolbar-organizer-strip-active");
+                DragAndDrop.visualMode = dragData.IsPinned
+                    ? DragAndDropVisualMode.Move
+                    : DragAndDropVisualMode.Copy;
+                dragEvent.StopPropagation();
+            });
+
+            strip.RegisterCallback<DragPerformEvent>(dragEvent =>
+            {
+                var dragData = SceneToolbarDragData.Current;
+                if (dragData == null)
+                {
+                    return;
+                }
+
+                var insertionIndex = GetPinnedInsertionIndex(
+                    strip,
+                    dragData.SceneGuid,
+                    dragEvent.mousePosition);
+                DragAndDrop.AcceptDrag();
+                if (dragData.IsPinned)
+                {
+                    SceneToolbarSettingsRepository.MoveTo(
+                        dragData.SceneGuid,
+                        insertionIndex);
+                }
+                else
+                {
+                    SceneToolbarSettingsRepository.AddSceneAt(
+                        dragData.SceneAsset,
+                        insertionIndex);
+                }
+
+                ClearDropState();
+                dragEvent.StopPropagation();
+            });
+            strip.RegisterCallback<DragLeaveEvent>(_ => ClearDropState());
+            strip.RegisterCallback<DragExitedEvent>(_ => ClearDropState());
+        }
+
+        private static void ConfigureUnpinDropZone(VisualElement unpinZone)
+        {
+            void SetActive(bool active)
+            {
+                unpinZone.EnableInClassList(
+                    "scene-toolbar-unpin-drop-zone-active",
+                    active);
+            }
+
+            unpinZone.RegisterCallback<DragUpdatedEvent>(dragEvent =>
+            {
+                var canUnpin = SceneToolbarDragData.Current?.IsPinned == true;
+                SetActive(canUnpin);
+                DragAndDrop.visualMode = canUnpin
+                    ? DragAndDropVisualMode.Move
+                    : DragAndDropVisualMode.Rejected;
+                if (canUnpin)
+                {
+                    dragEvent.StopPropagation();
+                }
+            });
+            unpinZone.RegisterCallback<DragPerformEvent>(dragEvent =>
+            {
+                var dragData = SceneToolbarDragData.Current;
+                if (dragData?.IsPinned != true)
+                {
+                    return;
+                }
+
+                DragAndDrop.AcceptDrag();
+                SceneToolbarSettingsRepository.Remove(dragData.SceneGuid);
+                SetActive(false);
+                dragEvent.StopPropagation();
+            });
+            unpinZone.RegisterCallback<DragLeaveEvent>(_ => SetActive(false));
+            unpinZone.RegisterCallback<DragExitedEvent>(_ => SetActive(false));
+        }
+
+        private static int GetPinnedInsertionIndex(
+            VisualElement strip,
+            string draggedSceneGuid,
+            Vector2 mousePosition)
+        {
+            var chips = strip.Children()
+                .Where(child =>
+                    child.ClassListContains("scene-toolbar-organizer-chip") &&
+                    !string.Equals(
+                        child.userData as string,
+                        draggedSceneGuid,
+                        StringComparison.Ordinal))
+                .ToList();
+            for (var index = 0; index < chips.Count; index++)
+            {
+                if (mousePosition.x < chips[index].worldBound.center.x)
+                {
+                    return index;
+                }
+            }
+
+            return chips.Count;
+        }
+
+        private static void ShowInsertionMarker(
+            VisualElement strip,
+            VisualElement marker,
+            int insertionIndex,
+            string draggedSceneGuid)
+        {
+            marker.RemoveFromHierarchy();
+            var chips = strip.Children()
+                .Where(child =>
+                    child.ClassListContains("scene-toolbar-organizer-chip") &&
+                    !string.Equals(
+                        child.userData as string,
+                        draggedSceneGuid,
+                        StringComparison.Ordinal))
+                .ToList();
+            if (insertionIndex < chips.Count)
+            {
+                strip.Insert(strip.IndexOf(chips[insertionIndex]), marker);
+            }
+            else
+            {
+                var emptyHint = strip.Q<Label>(className: "scene-toolbar-organizer-empty");
+                strip.Insert(emptyHint != null ? strip.IndexOf(emptyHint) : strip.childCount, marker);
+            }
+        }
+
         private void SelectTab(
             SettingsTab tab,
             Button projectScenesTab,
@@ -267,7 +530,7 @@ namespace SceneToolbar.Editor
             var heading = new VisualElement();
             heading.AddToClassList("scene-toolbar-panel-heading");
             heading.Add(new Label("Project Scenes").WithClass("scene-toolbar-panel-title"));
-            heading.Add(new Label("Search by scene name or any part of its path.")
+            heading.Add(new Label("Search by name or path, then drag a scene icon into Pinned order.")
                 .WithClass("scene-toolbar-panel-description"));
             header.Add(heading);
             projectSceneCount = new Label();
@@ -339,9 +602,16 @@ namespace SceneToolbar.Editor
                 row.AddToClassList("scene-toolbar-scene-row-active");
             }
 
-            row.Add(CreateIconPreview(
+            var sceneIcon = CreateIconPreview(
                 SceneAssetUtility.GetDefaultSceneIcon(),
-                "scene-toolbar-scene-icon"));
+                "scene-toolbar-scene-icon");
+            sceneIcon.tooltip = isPinned
+                ? "Drag to reorder or unpin this scene"
+                : "Drag to add this scene to Pinned order";
+            sceneIcon.AddToClassList("scene-toolbar-scene-drag-source");
+            sceneIcon.AddManipulator(new SceneToolbarDragManipulator(
+                new SceneToolbarDragData(scene.Guid, scene.SceneAsset, isPinned)));
+            row.Add(sceneIcon);
 
             var information = new VisualElement();
             information.AddToClassList("scene-toolbar-scene-information");
@@ -433,7 +703,7 @@ namespace SceneToolbar.Editor
             var heading = new VisualElement();
             heading.AddToClassList("scene-toolbar-panel-heading");
             heading.Add(new Label("Pinned Toolbar").WithClass("scene-toolbar-panel-title"));
-            heading.Add(new Label("Ordered left to right beside Play Mode.")
+            heading.Add(new Label("Edit appearance below. Drag Pinned order above to rearrange.")
                 .WithClass("scene-toolbar-panel-description"));
             header.Add(heading);
             header.Add(new Label($"{settings.Entries.Count}/{SceneToolbarSettings.MaxEntries}")
@@ -450,7 +720,7 @@ namespace SceneToolbar.Editor
                 var empty = new VisualElement();
                 empty.AddToClassList("scene-toolbar-empty-card");
                 empty.Add(new Label("Nothing pinned yet.").WithClass("scene-toolbar-empty-title"));
-                empty.Add(new Label("Use Pin on any project scene to add a one-click toolbar button.")
+                empty.Add(new Label("Drag a project scene icon into Pinned order above.")
                     .WithClass("scene-toolbar-empty-copy"));
                 scrollView.Add(empty);
             }
@@ -463,8 +733,7 @@ namespace SceneToolbar.Editor
                     {
                         scrollView.Add(CreatePinnedSceneCard(
                             entry,
-                            index,
-                            settings.Entries.Count));
+                            index));
                     }
                 }
             }
@@ -475,8 +744,7 @@ namespace SceneToolbar.Editor
 
         private VisualElement CreatePinnedSceneCard(
             SceneToolbarEntry entry,
-            int index,
-            int entryCount)
+            int index)
         {
             var sceneGuid = entry.SceneGuid;
             var scene = SceneAssetUtility.ResolveScene(sceneGuid);
@@ -492,11 +760,7 @@ namespace SceneToolbar.Editor
 
             var information = new VisualElement();
             information.AddToClassList("scene-toolbar-pinned-information");
-            var displayName = !string.IsNullOrWhiteSpace(entry.DisplayName)
-                ? entry.DisplayName
-                : !string.IsNullOrWhiteSpace(scene.AssetName)
-                    ? scene.AssetName
-                    : "Missing Scene";
+            var displayName = GetSceneDisplayName(entry, scene);
             information.Add(new Label(displayName).WithClass("scene-toolbar-pinned-name"));
             information.Add(new Label(scene.Path)
             {
@@ -516,14 +780,6 @@ namespace SceneToolbar.Editor
                 SceneAssetUtility.CanOpenScenes &&
                 !SceneAssetUtility.IsOnlyOpenScene(scene.Path));
             actions.Add(openButton);
-            actions.Add(CreateMoveButton(sceneGuid, index, -1, "chevron-up", "Move left"));
-            actions.Add(CreateMoveButton(
-                sceneGuid,
-                index,
-                1,
-                "chevron-down",
-                "Move right",
-                entryCount));
 
             var removeButton = CreateActionButton(
                 () => SceneToolbarSettingsRepository.Remove(sceneGuid),
@@ -576,21 +832,15 @@ namespace SceneToolbar.Editor
             return card;
         }
 
-        private static Button CreateMoveButton(
-            string sceneGuid,
-            int index,
-            int offset,
-            string iconName,
-            string tooltip,
-            int entryCount = int.MaxValue)
+        private static string GetSceneDisplayName(
+            SceneToolbarEntry entry,
+            ResolvedSceneAsset scene)
         {
-            var button = CreateActionButton(
-                () => SceneToolbarSettingsRepository.Move(sceneGuid, offset),
-                iconName,
-                tooltip,
-                "scene-toolbar-icon-button");
-            button.SetEnabled(offset < 0 ? index > 0 : index < entryCount - 1);
-            return button;
+            return !string.IsNullOrWhiteSpace(entry.DisplayName)
+                ? entry.DisplayName
+                : !string.IsNullOrWhiteSpace(scene.AssetName)
+                    ? scene.AssetName
+                    : "Missing Scene";
         }
 
         private static Button CreateActionButton(
