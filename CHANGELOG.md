@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2026-11-15
+
+- Give the main-toolbar settings button a gray button surface matching the Play Mode controls.
+
 ## [0.1.1] - 2026-11-15
 
 - Add visible backgrounds, borders, and interaction states to settings-window buttons.

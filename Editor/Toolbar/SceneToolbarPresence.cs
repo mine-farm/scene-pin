@@ -12,6 +12,10 @@ namespace SceneToolbar.Editor
     internal static class SceneToolbarPresence
     {
         private const string PlayModeControlsPath = "Play Mode Controls";
+        private const string ToolbarStyleSheetPath =
+            "Packages/com.minefarm.scene-pin/Editor/Toolbar/SceneToolbarMainToolbar.uss";
+        private const string SettingsOverlayClass = "scene-pin-settings-overlay";
+        private const string SettingsButtonClass = "scene-pin-settings-button";
         private const double CheckIntervalSeconds = 1d;
 
         private static readonly MethodInfo DockBeforeMethod = typeof(Overlay).GetMethod(
@@ -78,6 +82,7 @@ namespace SceneToolbar.Editor
             {
                 KeepDisplayed(settings);
                 KeepDisplayed(scenes);
+                StyleSettingsButton(settings);
                 DockImmediatelyBefore(settings, playModeControls);
                 DockImmediatelyBefore(scenes, settings);
             }
@@ -107,6 +112,28 @@ namespace SceneToolbar.Editor
             if (!displayed && !applying)
             {
                 Request();
+            }
+        }
+
+        private static void StyleSettingsButton(Overlay overlay)
+        {
+            var root = overlay.rootVisualElement;
+            if (!root.ClassListContains(SettingsOverlayClass))
+            {
+                var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ToolbarStyleSheetPath);
+                if (styleSheet == null)
+                {
+                    return;
+                }
+
+                root.styleSheets.Add(styleSheet);
+                root.AddToClassList(SettingsOverlayClass);
+            }
+
+            var button = root.Q<VisualElement>(className: "unity-toolbar-button");
+            if (button != null && !button.ClassListContains(SettingsButtonClass))
+            {
+                button.AddToClassList(SettingsButtonClass);
             }
         }
 
