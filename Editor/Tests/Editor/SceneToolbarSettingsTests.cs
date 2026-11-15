@@ -233,5 +233,31 @@ namespace SceneToolbar.Editor.Tests
             Assert.That(scenesAttribute.defaultDockPosition, Is.EqualTo(MainToolbarDockPosition.Middle));
             Assert.That(scenesAttribute.defaultDockIndex, Is.EqualTo(-2));
         }
+
+        [Test]
+        public void ToolbarLayout_OffsetsScenePinWidthFromCenteredPlayModeControls()
+        {
+            var margin = SceneToolbarPresence.CalculateScenesMarginLeft(
+                180f,
+                2f,
+                3f,
+                32f,
+                4f);
+
+            Assert.That(margin, Is.EqualTo(-221f));
+        }
+
+        [Test]
+        public void ToolbarLayout_IgnoresUnresolvedMeasurements()
+        {
+            var margin = SceneToolbarPresence.CalculateScenesMarginLeft(
+                float.NaN,
+                2f,
+                float.PositiveInfinity,
+                32f,
+                4f);
+
+            Assert.That(margin, Is.EqualTo(-38f));
+        }
     }
 }

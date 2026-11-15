@@ -18,6 +18,7 @@ namespace SceneToolbar.Editor
         private const string SettingsButtonClass = "scene-pin-settings-button";
         private const string ScenesOverlayClass = "scene-pin-scenes-overlay";
         private const string SceneButtonClass = "scene-pin-scene-button";
+        private const string LayoutWatchClass = "scene-pin-layout-watch";
         private const double CheckIntervalSeconds = 1d;
 
         private static readonly MethodInfo DockBeforeMethod = typeof(Overlay).GetMethod(
@@ -88,6 +89,9 @@ namespace SceneToolbar.Editor
                 StyleButtons(scenes, ScenesOverlayClass, SceneButtonClass);
                 DockImmediatelyBefore(settings, playModeControls);
                 DockImmediatelyBefore(scenes, settings);
+                WatchWidth(settings);
+                WatchWidth(scenes);
+                KeepPlayModeControlsAnchored(scenes, settings, playModeControls);
             }
             finally
             {
@@ -166,6 +170,84 @@ namespace SceneToolbar.Editor
             {
                 LogDockWarning(exception.GetBaseException().Message);
             }
+        }
+
+        private static void WatchWidth(Overlay overlay)
+        {
+            var root = overlay.rootVisualElement;
+            if (root.ClassListContains(LayoutWatchClass))
+            {
+                return;
+            }
+
+            root.AddToClassList(LayoutWatchClass);
+            root.RegisterCallback<GeometryChangedEvent>(OnOverlayGeometryChanged);
+        }
+
+        private static void OnOverlayGeometryChanged(GeometryChangedEvent geometryEvent)
+        {
+            if (!Mathf.Approximately(geometryEvent.oldRect.width, geometryEvent.newRect.width))
+            {
+                Request();
+            }
+        }
+
+        private static void KeepPlayModeControlsAnchored(
+            Overlay scenes,
+            Overlay settings,
+            Overlay playModeControls)
+        {
+            var scenesRoot = scenes.rootVisualElement;
+            var settingsRoot = settings.rootVisualElement;
+            var playModeRoot = playModeControls.rootVisualElement;
+            var parent = playModeRoot.parent;
+            if (parent == null ||
+                scenesRoot.parent != parent ||
+                settingsRoot.parent != parent ||
+                !IsImmediatelyBefore(scenesRoot, settingsRoot) ||
+                !IsImmediatelyBefore(settingsRoot, playModeRoot))
+            {
+                scenesRoot.style.marginLeft = StyleKeyword.Null;
+                return;
+            }
+
+            var scenesWidth = scenesRoot.layout.width;
+            var settingsWidth = settingsRoot.layout.width;
+            if (!IsFinitePositive(scenesWidth) || !IsFinitePositive(settingsWidth))
+            {
+                return;
+            }
+
+            scenesRoot.style.marginLeft = CalculateScenesMarginLeft(
+                scenesWidth,
+                scenesRoot.resolvedStyle.marginRight,
+                settingsRoot.resolvedStyle.marginLeft,
+                settingsWidth,
+                settingsRoot.resolvedStyle.marginRight);
+        }
+
+        internal static float CalculateScenesMarginLeft(
+            float scenesWidth,
+            float scenesRightMargin,
+            float settingsLeftMargin,
+            float settingsWidth,
+            float settingsRightMargin)
+        {
+            return -(FiniteOrZero(scenesWidth) +
+                     FiniteOrZero(scenesRightMargin) +
+                     FiniteOrZero(settingsLeftMargin) +
+                     FiniteOrZero(settingsWidth) +
+                     FiniteOrZero(settingsRightMargin));
+        }
+
+        private static bool IsFinitePositive(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value) && value > 0f;
+        }
+
+        private static float FiniteOrZero(float value)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value) ? 0f : value;
         }
 
         private static bool IsImmediatelyBefore(VisualElement element, VisualElement target)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.8] - 2026-11-15
+
+- Keep the Play Mode controls centered while pinned scene buttons expand to their left.
+
 ## [0.1.7] - 2026-11-15
 
 - Add a horizontal pinned-scene organizer with drag-to-pin, drag-to-reorder, and drop-to-unpin interactions.
